@@ -128,6 +128,11 @@ export class WebRTCService {
     return offer
   }
 
+  /** True solo si aún no se ha procesado ningún offer (evita duplicados). */
+  canHandleOffer(): boolean {
+    return !!this.peerConnection && this.peerConnection.remoteDescription === null
+  }
+
   async handleOffer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
     if (!this.peerConnection) throw new Error('No peer connection')
 

@@ -60,16 +60,22 @@ export function useWebRTC(serverUrl: string) {
         signalingService.sendIceCandidate(candidate, code)
       })
 
+      // Ejecuta la acción una vez por conexión: si el socket ya está conectado,
+      // ahora mismo; si no, en el evento 'connected'. Así se cubre la primera
+      // conexión y las reconexiones sin disparar la acción dos veces.
+      const onConnected = (action: () => void) => {
+        signalingService.on('connected', action)
+        if (signalingService.isConnected) action()
+      }
+
       if (role === 'display') {
         // (Re)crea la sesión en cada (re)conexión del socket. Render puede
         // cortar conexiones inactivas, y su handler de disconnect borra la
         // sesión; al reconectar hay que volver a registrarla.
-        const ensureSession = () => {
+        onConnected(() => {
           console.log('[Signaling] Creando sesión', code)
           signalingService.createSession(code)
-        }
-        ensureSession()
-        signalingService.on('connected', ensureSession)
+        })
 
         signalingService.on('session:joined', async () => {
           console.log('[Signaling] Control unido → enviando offer')
@@ -87,8 +93,7 @@ export function useWebRTC(serverUrl: string) {
           console.log('[Signaling] Uniéndose a la sesión', code)
           signalingService.joinSession(code)
         }
-        join()
-        signalingService.on('connected', join)
+        onConnected(join)
         signalingService.on('session:not-found', () => {
           joinAttempts += 1
           if (joinAttempts > 30) {
@@ -101,9 +106,19 @@ export function useWebRTC(serverUrl: string) {
       }
 
       signalingService.on('webrtc:offer', async ({ sdp }) => {
+        // Ignora offers duplicados: si la conexión ya está negociada (estado
+        // 'stable'), procesar otro offer rompería el RTCPeerConnection.
+        if (!webrtc.canHandleOffer()) {
+          console.warn('[Signaling] Offer duplicado ignorado')
+          return
+        }
         console.log('[Signaling] Offer recibida → enviando answer')
-        const answer = await webrtc.handleOffer(sdp)
-        signalingService.sendAnswer(answer, code)
+        try {
+          const answer = await webrtc.handleOffer(sdp)
+          signalingService.sendAnswer(answer, code)
+        } catch (err) {
+          console.warn('[Signaling] Error procesando offer', err)
+        }
       })
 
       signalingService.on('webrtc:answer', async ({ sdp }) => {
