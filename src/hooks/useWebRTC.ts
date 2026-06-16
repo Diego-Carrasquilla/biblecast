@@ -61,29 +61,42 @@ export function useWebRTC(serverUrl: string) {
       })
 
       if (role === 'display') {
+        console.log('[Signaling] Creando sesión', code)
         signalingService.createSession(code)
 
         signalingService.on('session:joined', async () => {
+          console.log('[Signaling] Control unido → enviando offer')
           const channel = webrtc.createDataChannel()
           const offer = await webrtc.createOffer()
           signalingService.sendOffer(offer, code)
           void channel
         })
       } else {
+        console.log('[Signaling] Uniéndose a la sesión', code)
         signalingService.joinSession(code)
       }
 
+      signalingService.on('session:not-found', () => {
+        console.warn('[Signaling] Sesión no encontrada', code)
+      })
+
       signalingService.on('webrtc:offer', async ({ sdp }) => {
+        console.log('[Signaling] Offer recibida → enviando answer')
         const answer = await webrtc.handleOffer(sdp)
         signalingService.sendAnswer(answer, code)
       })
 
       signalingService.on('webrtc:answer', async ({ sdp }) => {
+        console.log('[Signaling] Answer recibida')
         await webrtc.handleAnswer(sdp)
       })
 
       signalingService.on('webrtc:ice-candidate', async ({ candidate }) => {
-        await webrtc.addIceCandidate(candidate)
+        try {
+          await webrtc.addIceCandidate(candidate)
+        } catch (err) {
+          console.warn('[Signaling] No se pudo añadir ICE candidate', err)
+        }
       })
     },
     [serverUrl, handleIncomingMessage],
