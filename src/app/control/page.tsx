@@ -1,13 +1,16 @@
 'use client'
 
-import { Suspense, useState, useCallback } from 'react'
+import { Suspense, useState, useCallback, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { VerseAutocomplete } from '@/components/ui/VerseAutocomplete'
 import { useBibleCastStore } from '@/store/useBibleCastStore'
+import { useWebRTC } from '@/hooks/useWebRTC'
 import { fetchVerse } from '@/features/bible/BibleService'
 import { cn } from '@/lib/utils'
 import type { BibleVerse } from '@/types/bible'
+
+const SIGNALING_URL = process.env.NEXT_PUBLIC_SIGNALING_URL ?? 'http://localhost:3001'
 
 const QUICK_VERSES = [
   'Salmo 23:1',
@@ -23,12 +26,47 @@ function ControlContent() {
   const code = searchParams.get('code') ?? ''
 
   const { currentVerse, showVerse, hideVerse, connectionStatus } = useBibleCastStore()
+  const { connect, disconnect, sendEvent } = useWebRTC(SIGNALING_URL)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [recentVerses, setRecentVerses] = useState<BibleVerse[]>([])
 
   const isConnected = connectionStatus === 'connected'
+
+  // Se une a la sesión de la pantalla en cuanto tenemos un código.
+  const startedRef = useRef(false)
+  useEffect(() => {
+    if (!code || startedRef.current) return
+    startedRef.current = true
+    connect(code, 'controller')
+    return () => disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code])
+
+  // Actualiza la vista local y, además, lo envía a la pantalla por WebRTC.
+  const pushVerse = useCallback(
+    (verse: BibleVerse) => {
+      showVerse(verse)
+      sendEvent({
+        type: 'SHOW_VERSE',
+        payload: {
+          book: verse.book,
+          chapter: verse.chapter,
+          verse: verse.verse,
+          text: verse.text,
+          reference: verse.reference,
+        },
+        timestamp: Date.now(),
+      })
+    },
+    [showVerse, sendEvent],
+  )
+
+  const hideOnDisplay = useCallback(() => {
+    hideVerse()
+    sendEvent({ type: 'HIDE_VERSE', timestamp: Date.now() })
+  }, [hideVerse, sendEvent])
 
   const handleSearch = useCallback(async (ref: string) => {
     if (!ref.trim()) return
@@ -38,7 +76,7 @@ function ControlContent() {
 
     const verse = await fetchVerse(ref)
     if (verse) {
-      showVerse(verse)
+      pushVerse(verse)
       setRecentVerses((prev) => {
         const filtered = prev.filter((v) => v.reference !== verse.reference)
         return [verse, ...filtered].slice(0, 10)
@@ -48,7 +86,7 @@ function ControlContent() {
     }
 
     setLoading(false)
-  }, [showVerse])
+  }, [pushVerse])
 
   return (
     <div className="min-h-screen bg-surface">
@@ -101,10 +139,10 @@ function ControlContent() {
               {currentVerse.text}
             </p>
             <div className="flex gap-2">
-              <Button variant="secondary" fullWidth onClick={() => showVerse(currentVerse)}>
+              <Button variant="secondary" fullWidth onClick={() => pushVerse(currentVerse)}>
                 Mostrar en Pantalla
               </Button>
-              <Button variant="ghost" fullWidth onClick={hideVerse} className="border-on-primary-container text-on-primary-container">
+              <Button variant="ghost" fullWidth onClick={hideOnDisplay} className="border-on-primary-container text-on-primary-container">
                 Ocultar
               </Button>
             </div>
@@ -139,7 +177,7 @@ function ControlContent() {
                 <button
                   key={verse.reference}
                   type="button"
-                  onClick={() => showVerse(verse)}
+                  onClick={() => pushVerse(verse)}
                   className="w-full text-left px-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer"
                 >
                   <p className="font-body text-body-md font-medium text-on-surface">
