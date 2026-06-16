@@ -54,7 +54,7 @@ export function VerseAutocomplete({
 
     if (inChapterStage && knownBook) {
       const digits = rest.replace(/\D.*$/, '')
-      const candidates: Suggestion[] = []
+      const candidates: Extract<Suggestion, { kind: 'chapter' }>[] = []
       for (let ch = 1; ch <= knownBook.chapters && candidates.length < 8; ch++) {
         if (!digits || String(ch).startsWith(digits)) {
           candidates.push({ kind: 'chapter', book: knownBook, chapter: ch })
