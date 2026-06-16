@@ -68,6 +68,11 @@ export class WebRTCService {
       console.log('[WebRTC] ICE gathering:', this.peerConnection?.iceGatheringState)
     }
 
+    this.peerConnection.onicecandidateerror = (event) => {
+      const e = event as RTCPeerConnectionIceErrorEvent
+      console.warn('[WebRTC] Error de candidato ICE:', e.errorCode, e.errorText, e.url)
+    }
+
     this.peerConnection.ondatachannel = (event) => {
       console.log('[WebRTC] Canal de datos recibido')
       this.setupDataChannel(event.channel)
