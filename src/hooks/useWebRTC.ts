@@ -127,6 +127,7 @@ export function useWebRTC(serverUrl: string) {
       })
 
       signalingService.on('webrtc:ice-candidate', async ({ candidate }) => {
+        console.log('[Signaling] Candidato remoto recibido')
         try {
           await webrtc.addIceCandidate(candidate)
         } catch (err) {

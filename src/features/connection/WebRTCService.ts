@@ -40,6 +40,9 @@ export class WebRTCService {
   private dataChannel: RTCDataChannel | null = null
   private messageHandlers = new Set<MessageHandler>()
   private onIceCandidate: ((candidate: RTCIceCandidateInit) => void) | null = null
+  // Candidatos ICE que llegan antes de fijar la descripción remota; se aplican
+  // en cuanto esté lista (flushPendingCandidates).
+  private pendingCandidates: RTCIceCandidateInit[] = []
 
   constructor() {
     this.handleMessage = this.handleMessage.bind(this)
@@ -54,8 +57,15 @@ export class WebRTCService {
 
     this.peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
+        console.log('[WebRTC] Candidato local →', event.candidate.type)
         this.onIceCandidate?.(event.candidate.toJSON())
+      } else {
+        console.log('[WebRTC] Recolección de candidatos completa')
       }
+    }
+
+    this.peerConnection.onicegatheringstatechange = () => {
+      console.log('[WebRTC] ICE gathering:', this.peerConnection?.iceGatheringState)
     }
 
     this.peerConnection.ondatachannel = (event) => {
@@ -137,6 +147,7 @@ export class WebRTCService {
     if (!this.peerConnection) throw new Error('No peer connection')
 
     await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
+    await this.flushPendingCandidates()
     const answer = await this.peerConnection.createAnswer()
     await this.peerConnection.setLocalDescription(answer)
     return answer
@@ -145,11 +156,31 @@ export class WebRTCService {
   async handleAnswer(answer: RTCSessionDescriptionInit): Promise<void> {
     if (!this.peerConnection) throw new Error('No peer connection')
     await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+    await this.flushPendingCandidates()
   }
 
   async addIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
     if (!this.peerConnection) throw new Error('No peer connection')
+    // Si la descripción remota aún no está fijada, encola el candidato.
+    if (!this.peerConnection.remoteDescription) {
+      this.pendingCandidates.push(candidate)
+      return
+    }
     await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+  }
+
+  private async flushPendingCandidates(): Promise<void> {
+    if (!this.peerConnection || this.pendingCandidates.length === 0) return
+    console.log('[WebRTC] Aplicando', this.pendingCandidates.length, 'candidatos en cola')
+    const queued = this.pendingCandidates
+    this.pendingCandidates = []
+    for (const candidate of queued) {
+      try {
+        await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+      } catch (err) {
+        console.warn('[WebRTC] Candidato en cola falló', err)
+      }
+    }
   }
 
   send(event: BibleCastEvent): void {
@@ -168,6 +199,7 @@ export class WebRTCService {
     this.peerConnection?.close()
     this.dataChannel = null
     this.peerConnection = null
+    this.pendingCandidates = []
     this.messageHandlers.clear()
   }
 
