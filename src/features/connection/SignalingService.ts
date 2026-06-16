@@ -1,6 +1,8 @@
 import { io, type Socket } from 'socket.io-client'
 
 type SignalingEventMap = {
+  'connected': (data: Record<string, never>) => void
+  'disconnected': (data: Record<string, never>) => void
   'session:created': (data: { code: string }) => void
   'session:joined': (data: { code: string }) => void
   'session:not-found': (data: { code: string }) => void

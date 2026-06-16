@@ -61,8 +61,15 @@ export function useWebRTC(serverUrl: string) {
       })
 
       if (role === 'display') {
-        console.log('[Signaling] Creando sesión', code)
-        signalingService.createSession(code)
+        // (Re)crea la sesión en cada (re)conexión del socket. Render puede
+        // cortar conexiones inactivas, y su handler de disconnect borra la
+        // sesión; al reconectar hay que volver a registrarla.
+        const ensureSession = () => {
+          console.log('[Signaling] Creando sesión', code)
+          signalingService.createSession(code)
+        }
+        ensureSession()
+        signalingService.on('connected', ensureSession)
 
         signalingService.on('session:joined', async () => {
           console.log('[Signaling] Control unido → enviando offer')
@@ -72,13 +79,26 @@ export function useWebRTC(serverUrl: string) {
           void channel
         })
       } else {
-        console.log('[Signaling] Uniéndose a la sesión', code)
-        signalingService.joinSession(code)
+        // El control reintenta unirse: la pantalla puede no haber registrado
+        // la sesión todavía (arranque en frío de Render) o el servidor haberse
+        // reiniciado. Reintenta cada 2 s hasta conectar.
+        let joinAttempts = 0
+        const join = () => {
+          console.log('[Signaling] Uniéndose a la sesión', code)
+          signalingService.joinSession(code)
+        }
+        join()
+        signalingService.on('connected', join)
+        signalingService.on('session:not-found', () => {
+          joinAttempts += 1
+          if (joinAttempts > 30) {
+            console.warn('[Signaling] Sesión no encontrada tras varios intentos', code)
+            return
+          }
+          console.warn('[Signaling] Sesión no encontrada, reintentando…', code)
+          setTimeout(join, 2000)
+        })
       }
-
-      signalingService.on('session:not-found', () => {
-        console.warn('[Signaling] Sesión no encontrada', code)
-      })
 
       signalingService.on('webrtc:offer', async ({ sdp }) => {
         console.log('[Signaling] Offer recibida → enviando answer')
