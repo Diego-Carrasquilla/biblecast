@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: biblecast-signaling
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm run signaling
+    healthCheckPath: /
+    envVars:
+      # URL del frontend en Vercel (para CORS). Se rellena tras desplegar en Vercel.
+      - key: CLIENT_URL
+        sync: false

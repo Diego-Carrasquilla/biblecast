@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bible Library | BibleCast</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:wght@600;700&amp;family=Work+Sans:wght@600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Playfair+Display:wght@100..900&amp;family=Work+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#3f465c",
+                    "on-primary-container": "#7c839b",
+                    "inverse-surface": "#2d3133",
+                    "outline": "#76777d",
+                    "secondary-container": "#fed488",
+                    "secondary-fixed": "#ffdea5",
+                    "on-primary-fixed": "#131b2e",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary-fixed-dim": "#e9c176",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "outline-variant": "#c6c6cd",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "error-container": "#ffdad6",
+                    "secondary": "#775a19",
+                    "surface-bright": "#f7f9fb",
+                    "on-background": "#191c1e",
+                    "surface-variant": "#e0e3e5",
+                    "inverse-primary": "#bec6e0",
+                    "on-tertiary-container": "#75859d",
+                    "primary-container": "#131b2e",
+                    "on-secondary-fixed": "#261900",
+                    "tertiary-container": "#0b1c30",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#f7f9fb",
+                    "background": "#f7f9fb",
+                    "surface-tint": "#565e74",
+                    "surface-dim": "#d8dadc",
+                    "on-surface": "#191c1e",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#dae2fd",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#785a1a",
+                    "on-surface-variant": "#45464d",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "on-secondary-fixed-variant": "#5d4201",
+                    "tertiary-fixed": "#d3e4fe",
+                    "surface-container-high": "#e6e8ea",
+                    "on-primary": "#ffffff",
+                    "primary": "#000000",
+                    "primary-fixed-dim": "#bec6e0",
+                    "surface-container-low": "#f2f4f6",
+                    "tertiary": "#000000"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "projection-margin": "10%",
+                    "sm": "8px",
+                    "md": "16px",
+                    "unit": "4px",
+                    "xs": "4px",
+                    "container-max": "1280px",
+                    "xl": "48px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Playfair Display"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Work Sans"],
+                    "display-projection": ["Playfair Display"],
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["48px", {"lineHeight": "56px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-projection": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Atmospheric backdrop animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating-element { animation: float 6s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Sidebar Navigation -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col py-md px-sm z-50">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">BibleCast</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-70">Grace Community Church</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-md px-md py-sm transition-colors text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-colors text-primary border-l-4 border-secondary font-bold bg-surface-container-high rounded-r-lg group" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-body-md">Library</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-colors text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg group" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md">History</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-colors text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-sm pt-md border-t border-outline-variant">
+<button class="w-full bg-secondary text-on-secondary py-md px-lg rounded-xl font-bold flex items-center justify-center gap-sm active:scale-95 duration-200 shadow-sm transition-all hover:brightness-110">
+<span class="material-symbols-outlined">videocam</span>
+                Go Live
+            </button>
+<div class="mt-md flex items-center gap-sm px-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden">
+<img alt="Church Admin Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKknc7ARN3JPLPIwEPCxCROAIxUCdB4ngg62du3vzZx99J4eIqR_563niMv2atYKenowFbMo8QQ4blxzFFBdvDbj0ULuzIm42LbY3ShjO353o7uObrMKSSMX4sQx1L5AvBnFBbvyODV4iIuwnuDu6k6HWvd3LxYD2CtIguF3HMSuRRJDgA0X2JGiqaM7eq2N15VOuagFJ7yKzQT9UyWFFFodFPawljgXneDXC6zvwQ-FACaQRgNQkWoI1CNghqFko6c-I9-RqohU9L"/>
+</div>
+<div class="flex-1">
+<p class="font-label-sm text-label-sm text-on-surface leading-tight">Pastor John</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="ml-64 flex justify-between items-center w-[calc(100%-16rem)] px-lg h-16 bg-surface-bright border-b border-outline-variant sticky top-0 z-40 shadow-sm">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full group">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant transition-colors group-focus-within:text-primary">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-full py-sm pl-11 pr-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-body-md" placeholder="Search scripture, topics, or authors..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg ml-xl">
+<nav class="hidden lg:flex items-center gap-md">
+<a class="text-primary border-b-2 border-secondary font-semibold px-sm py-1" href="#">Library</a>
+<a class="text-on-surface-variant hover:text-primary transition-all px-sm py-1" href="#">Drafts</a>
+<a class="text-on-surface-variant hover:text-primary transition-all px-sm py-1" href="#">Resources</a>
+</nav>
+<div class="flex items-center gap-md border-l border-outline-variant pl-lg">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary active:scale-95 duration-200">cast</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary active:scale-95 duration-200">emergency_home</button>
+<button class="bg-primary text-on-primary text-label-sm px-md py-1.5 rounded-full hover:opacity-90 active:scale-95 duration-200">
+                    Clear Projection
+                </button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-lg min-h-[calc(100vh-4rem)]">
+<!-- Header & Filter Section -->
+<div class="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<nav class="flex items-center gap-xs mb-xs text-on-surface-variant font-label-sm">
+<span>Bible Library</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary">English Standard Version</span>
+</nav>
+<h2 class="font-headline-lg text-headline-md lg:text-headline-lg text-primary">Scripture Library</h2>
+</div>
+<div class="flex gap-sm">
+<div class="flex bg-surface-container rounded-lg p-unit">
+<button class="p-sm bg-surface-container-lowest shadow-sm rounded-lg flex items-center justify-center transition-all" id="view-grid">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-high rounded-lg flex items-center justify-center transition-all" id="view-list">
+<span class="material-symbols-outlined">list</span>
+</button>
+</div>
+<button class="flex items-center gap-sm px-md py-sm bg-surface-container rounded-lg border border-outline-variant text-label-sm hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    Filters
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout for Books -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-md" id="books-grid">
+<!-- Category Header: Old Testament -->
+<div class="col-span-full mt-md mb-sm flex items-center gap-md">
+<h3 class="font-headline-md text-primary opacity-60">Old Testament</h3>
+<div class="flex-1 h-[1px] bg-outline-variant"></div>
+</div>
+<!-- Book Card: Genesis (Active Sample) -->
+<div class="cursor-pointer group relative overflow-hidden bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Genesis')">
+<div class="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+<span class="material-symbols-outlined text-[120px]">auto_stories</span>
+</div>
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-tertiary-container text-on-tertiary-container font-label-sm rounded mb-sm">Torah</span>
+<h4 class="font-headline-md text-primary mb-unit">Genesis</h4>
+<p class="font-label-sm text-on-surface-variant">50 Chapters</p>
+</div>
+<div class="mt-md flex gap-unit">
+<div class="h-1 flex-1 bg-secondary rounded-full"></div>
+<div class="h-1 flex-1 bg-surface-container-high rounded-full"></div>
+<div class="h-1 flex-1 bg-surface-container-high rounded-full"></div>
+</div>
+</div>
+<!-- Book Card: Exodus -->
+<div class="cursor-pointer group bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Exodus')">
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-tertiary-container text-on-tertiary-container font-label-sm rounded mb-sm">Torah</span>
+<h4 class="font-headline-md text-primary mb-unit">Exodus</h4>
+<p class="font-label-sm text-on-surface-variant">40 Chapters</p>
+</div>
+<div class="mt-md flex gap-unit">
+<div class="h-1 flex-1 bg-surface-container-high rounded-full"></div>
+<div class="h-1 flex-1 bg-surface-container-high rounded-full"></div>
+<div class="h-1 flex-1 bg-surface-container-high rounded-full"></div>
+</div>
+</div>
+<!-- Book Card: Leviticus -->
+<div class="cursor-pointer group bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Leviticus')">
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-tertiary-container text-on-tertiary-container font-label-sm rounded mb-sm">Torah</span>
+<h4 class="font-headline-md text-primary mb-unit">Leviticus</h4>
+<p class="font-label-sm text-on-surface-variant">27 Chapters</p>
+</div>
+</div>
+<!-- Book Card: Psalms (Highlight) -->
+<div class="cursor-pointer lg:col-span-2 group relative overflow-hidden bg-primary-container text-on-primary border border-primary rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Psalms')">
+<div class="absolute inset-0 opacity-10">
+
+</div>
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-secondary text-on-secondary font-label-sm rounded mb-sm uppercase tracking-tighter">Wisdom</span>
+<h4 class="font-headline-md text-white mb-unit">Psalms</h4>
+<p class="font-label-sm text-white opacity-70">150 Chapters</p>
+</div>
+<div class="mt-xl flex items-center justify-between relative z-10">
+<p class="font-body-md italic text-white opacity-90 max-w-[200px]">"The Lord is my shepherd..."</p>
+<span class="material-symbols-outlined text-secondary-fixed">music_note</span>
+</div>
+</div>
+<!-- Book Card: Numbers -->
+<div class="cursor-pointer group bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Numbers')">
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-tertiary-container text-on-tertiary-container font-label-sm rounded mb-sm">Torah</span>
+<h4 class="font-headline-md text-primary mb-unit">Numbers</h4>
+<p class="font-label-sm text-on-surface-variant">36 Chapters</p>
+</div>
+</div>
+<!-- Category Header: New Testament -->
+<div class="col-span-full mt-xl mb-sm flex items-center gap-md">
+<h3 class="font-headline-md text-primary opacity-60">New Testament</h3>
+<div class="flex-1 h-[1px] bg-outline-variant"></div>
+</div>
+<!-- Book Card: Matthew -->
+<div class="cursor-pointer group bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Matthew')">
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-secondary-container text-on-secondary-container font-label-sm rounded mb-sm">Gospel</span>
+<h4 class="font-headline-md text-primary mb-unit">Matthew</h4>
+<p class="font-label-sm text-on-surface-variant">28 Chapters</p>
+</div>
+</div>
+<!-- Book Card: Mark -->
+<div class="cursor-pointer group bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Mark')">
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-secondary-container text-on-secondary-container font-label-sm rounded mb-sm">Gospel</span>
+<h4 class="font-headline-md text-primary mb-unit">Mark</h4>
+<p class="font-label-sm text-on-surface-variant">16 Chapters</p>
+</div>
+</div>
+<!-- Book Card: Romans -->
+<div class="cursor-pointer group bg-surface-container-lowest border border-outline-variant rounded-xl p-md transition-all hover:shadow-lg hover:-translate-y-1" onclick="openSelector('Romans')">
+<div class="relative z-10">
+<span class="inline-block px-sm py-unit bg-outline-variant text-on-surface-variant font-label-sm rounded mb-sm">Epistle</span>
+<h4 class="font-headline-md text-primary mb-unit">Romans</h4>
+<p class="font-label-sm text-on-surface-variant">16 Chapters</p>
+</div>
+</div>
+<!-- Proverbial Wisdom Promo Card -->
+<div class="lg:col-span-3 bg-surface-container-high rounded-xl p-lg flex items-center justify-between overflow-hidden relative border border-outline-variant">
+<div class="relative z-10 max-w-sm">
+<h4 class="font-headline-md text-primary mb-sm">Quick Selection: Worship Set</h4>
+<p class="text-on-surface-variant mb-md">Quickly access the most frequent scriptures used in Sunday services.</p>
+<div class="flex flex-wrap gap-sm">
+<button class="px-md py-unit bg-surface-container-lowest border border-outline-variant rounded-full text-label-sm hover:bg-primary hover:text-on-primary transition-all">Psalm 23</button>
+<button class="px-md py-unit bg-surface-container-lowest border border-outline-variant rounded-full text-label-sm hover:bg-primary hover:text-on-primary transition-all">John 3:16</button>
+<button class="px-md py-unit bg-surface-container-lowest border border-outline-variant rounded-full text-label-sm hover:bg-primary hover:text-on-primary transition-all">Hebrews 11</button>
+</div>
+</div>
+<div class="hidden xl:block absolute right-[-20px] top-[-20px] opacity-10">
+<span class="material-symbols-outlined text-[200px]">auto_awesome</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Slide-up Verse Selector Overlay -->
+<div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-end justify-center transition-opacity duration-300 opacity-0 pointer-events-none" id="selector-overlay">
+<div class="bg-surface-bright w-full max-w-4xl rounded-t-3xl shadow-2xl p-xl translate-y-full transition-transform duration-300 ease-out max-h-[870px] overflow-y-auto hide-scrollbar" id="selector-modal">
+<div class="flex justify-between items-center mb-xl">
+<div>
+<h3 class="font-headline-lg text-headline-md lg:text-headline-lg text-primary" id="selected-book-title">Genesis</h3>
+<p class="font-label-sm text-on-surface-variant">Select Chapter and Verse</p>
+</div>
+<button class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-highest transition-colors" onclick="closeSelector()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Chapter Selection Grid -->
+<div class="mb-xl">
+<div class="flex items-center gap-md mb-md">
+<h4 class="font-label-sm uppercase tracking-widest text-on-surface-variant">Chapters</h4>
+<div class="h-px flex-1 bg-outline-variant"></div>
+</div>
+<div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-sm">
+<!-- Sample Chapter Buttons -->
+<button class="aspect-square flex items-center justify-center rounded-lg border border-outline-variant bg-primary text-on-primary font-bold transition-all shadow-md" onclick="selectChapter(1)">1</button>
+<script>
+                        // Fill in more dummy chapters
+                        for(let i=2; i<=20; i++) {
+                            document.write(`<button onclick="selectChapter(${i})" class="aspect-square flex items-center justify-center rounded-lg border border-outline-variant hover:border-primary hover:text-primary transition-all">${i}</button>`);
+                        }
+                    </script>
+<button class="aspect-square flex items-center justify-center rounded-lg border border-dashed border-outline-variant opacity-50">...</button>
+</div>
+</div>
+<!-- Verse Selection Grid (Conditional Rendering Simulation) -->
+<div class="mb-lg opacity-0 transition-opacity duration-300" id="verse-section">
+<div class="flex items-center gap-md mb-md">
+<h4 class="font-label-sm uppercase tracking-widest text-on-surface-variant">Verses in Chapter 1</h4>
+<div class="h-px flex-1 bg-outline-variant"></div>
+</div>
+<div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-sm">
+<script>
+                        for(let i=1; i<=31; i++) {
+                            document.write(`<button onclick="previewVerse(${i})" class="py-md flex items-center justify-center rounded-lg border border-outline-variant hover:bg-secondary-container hover:border-secondary transition-all">v.${i}</button>`);
+                        }
+                    </script>
+</div>
+</div>
+<!-- Footer Action Bar -->
+<div class="sticky bottom-0 bg-surface-bright pt-lg border-t border-outline-variant flex flex-col md:flex-row md:items-center justify-between gap-md">
+<div class="flex items-center gap-md">
+<div class="p-sm bg-surface-container rounded-lg">
+<span class="font-headline-md text-primary" id="preview-path">Genesis 1:1</span>
+</div>
+<span class="material-symbols-outlined text-secondary animate-pulse">keyboard_double_arrow_right</span>
+</div>
+<div class="flex gap-md">
+<button class="px-xl py-md font-bold text-on-surface-variant hover:text-primary transition-colors" onclick="closeSelector()">Cancel</button>
+<button class="px-xl py-md bg-secondary text-on-secondary rounded-xl font-bold flex items-center gap-sm shadow-sm hover:brightness-110 active:scale-95 duration-200">
+<span class="material-symbols-outlined">add_to_queue</span>
+                        Queue Verse
+                    </button>
+<button class="px-xl py-md bg-primary text-on-primary rounded-xl font-bold flex items-center gap-sm shadow-lg hover:opacity-90 active:scale-95 duration-200">
+<span class="material-symbols-outlined">present_to_all</span>
+                        Project Now
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        const overlay = document.getElementById('selector-overlay');
+        const modal = document.getElementById('selector-modal');
+        const verseSection = document.getElementById('verse-section');
+        const previewPath = document.getElementById('preview-path');
+        const bookTitle = document.getElementById('selected-book-title');
+
+        let currentBook = 'Genesis';
+        let currentChapter = 1;
+        let currentVerse = 1;
+
+        function openSelector(book) {
+            currentBook = book;
+            bookTitle.innerText = book;
+            previewPath.innerText = `${book} 1:1`;
+            
+            overlay.classList.remove('pointer-events-none');
+            overlay.classList.add('opacity-100');
+            modal.classList.remove('translate-y-full');
+            
+            // Auto-reveal verses for demonstration
+            setTimeout(() => {
+                verseSection.classList.add('opacity-100');
+            }, 300);
+        }
+
+        function closeSelector() {
+            overlay.classList.add('opacity-0');
+            modal.classList.add('translate-y-full');
+            setTimeout(() => {
+                overlay.classList.add('pointer-events-none');
+                overlay.classList.remove('opacity-100');
+                verseSection.classList.remove('opacity-100');
+            }, 300);
+        }
+
+        function selectChapter(ch) {
+            currentChapter = ch;
+            updatePreview();
+        }
+
+        function previewVerse(v) {
+            currentVerse = v;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            previewPath.innerText = `${currentBook} ${currentChapter}:${currentVerse}`;
+        }
+
+        // Close on clicking backdrop
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeSelector();
+        });
+
+        // Toggle Grid/List view (Visual only)
+        document.getElementById('view-grid').addEventListener('click', function() {
+            this.classList.add('bg-surface-container-lowest', 'shadow-sm');
+            document.getElementById('view-list').classList.remove('bg-surface-container-lowest', 'shadow-sm');
+        });
+
+        document.getElementById('view-list').addEventListener('click', function() {
+            this.classList.add('bg-surface-container-lowest', 'shadow-sm');
+            document.getElementById('view-grid').classList.remove('bg-surface-container-lowest', 'shadow-sm');
+        });
+    </script>
+</body></html>

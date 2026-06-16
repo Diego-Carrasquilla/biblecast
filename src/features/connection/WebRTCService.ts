@@ -1,0 +1,129 @@
+import type { BibleCastEvent } from '@/types/events'
+
+type MessageHandler = (event: BibleCastEvent) => void
+
+export class WebRTCService {
+  private peerConnection: RTCPeerConnection | null = null
+  private dataChannel: RTCDataChannel | null = null
+  private messageHandlers = new Set<MessageHandler>()
+  private onIceCandidate: ((candidate: RTCIceCandidateInit) => void) | null = null
+
+  constructor() {
+    this.handleMessage = this.handleMessage.bind(this)
+  }
+
+  createConnection(onIceCandidate: (candidate: RTCIceCandidateInit) => void): RTCPeerConnection {
+    this.onIceCandidate = onIceCandidate
+
+    this.peerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+    })
+
+    this.peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        this.onIceCandidate?.(event.candidate.toJSON())
+      }
+    }
+
+    this.peerConnection.ondatachannel = (event) => {
+      this.setupDataChannel(event.channel)
+    }
+
+    return this.peerConnection
+  }
+
+  createDataChannel(label = 'biblecast'): RTCDataChannel {
+    if (!this.peerConnection) throw new Error('No peer connection')
+
+    const channel = this.peerConnection.createDataChannel(label, {
+      ordered: true,
+    })
+
+    this.setupDataChannel(channel)
+    return channel
+  }
+
+  private setupDataChannel(channel: RTCDataChannel): void {
+    this.dataChannel = channel
+
+    channel.onopen = () => {
+      this.handleMessage({
+        type: 'CONNECTED',
+        timestamp: Date.now(),
+      } satisfies BibleCastEvent)
+    }
+
+    channel.onclose = () => {
+      this.handleMessage({
+        type: 'DISCONNECTED',
+        timestamp: Date.now(),
+      } satisfies BibleCastEvent)
+    }
+
+    channel.onmessage = (event) => {
+      try {
+        const parsed: BibleCastEvent = JSON.parse(event.data)
+        this.handleMessage(parsed)
+      } catch {
+        // ignore malformed messages
+      }
+    }
+  }
+
+  private handleMessage(event: BibleCastEvent): void {
+    this.messageHandlers.forEach((handler) => handler(event))
+  }
+
+  async createOffer(): Promise<RTCSessionDescriptionInit> {
+    if (!this.peerConnection) throw new Error('No peer connection')
+
+    const offer = await this.peerConnection.createOffer()
+    await this.peerConnection.setLocalDescription(offer)
+    return offer
+  }
+
+  async handleOffer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
+    if (!this.peerConnection) throw new Error('No peer connection')
+
+    await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
+    const answer = await this.peerConnection.createAnswer()
+    await this.peerConnection.setLocalDescription(answer)
+    return answer
+  }
+
+  async handleAnswer(answer: RTCSessionDescriptionInit): Promise<void> {
+    if (!this.peerConnection) throw new Error('No peer connection')
+    await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+  }
+
+  async addIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
+    if (!this.peerConnection) throw new Error('No peer connection')
+    await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+  }
+
+  send(event: BibleCastEvent): void {
+    if (this.dataChannel?.readyState === 'open') {
+      this.dataChannel.send(JSON.stringify(event))
+    }
+  }
+
+  onMessage(handler: MessageHandler): () => void {
+    this.messageHandlers.add(handler)
+    return () => this.messageHandlers.delete(handler)
+  }
+
+  close(): void {
+    this.dataChannel?.close()
+    this.peerConnection?.close()
+    this.dataChannel = null
+    this.peerConnection = null
+    this.messageHandlers.clear()
+  }
+
+  get isConnected(): boolean {
+    return this.dataChannel?.readyState === 'open'
+  }
+}

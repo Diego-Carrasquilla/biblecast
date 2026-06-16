@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BibleCast | Presenter Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@600;700&family=Work+Sans:wght@600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:wght@100..900&family=Work+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#3f465c",
+                      "on-primary-container": "#7c839b",
+                      "inverse-surface": "#2d3133",
+                      "outline": "#76777d",
+                      "secondary-container": "#fed488",
+                      "secondary-fixed": "#ffdea5",
+                      "on-primary-fixed": "#131b2e",
+                      "surface-container-highest": "#e0e3e5",
+                      "secondary-fixed-dim": "#e9c176",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "outline-variant": "#c6c6cd",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "error-container": "#ffdad6",
+                      "secondary": "#775a19",
+                      "surface-bright": "#f7f9fb",
+                      "on-background": "#191c1e",
+                      "surface-variant": "#e0e3e5",
+                      "inverse-primary": "#bec6e0",
+                      "on-tertiary-container": "#75859d",
+                      "primary-container": "#131b2e",
+                      "on-secondary-fixed": "#261900",
+                      "tertiary-container": "#0b1c30",
+                      "on-tertiary": "#ffffff",
+                      "surface": "#f7f9fb",
+                      "background": "#f7f9fb",
+                      "surface-tint": "#565e74",
+                      "surface-dim": "#d8dadc",
+                      "on-surface": "#191c1e",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#dae2fd",
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "on-error": "#ffffff",
+                      "inverse-on-surface": "#eff1f3",
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#785a1a",
+                      "on-surface-variant": "#45464d",
+                      "on-secondary": "#ffffff",
+                      "surface-container": "#eceef0",
+                      "on-secondary-fixed-variant": "#5d4201",
+                      "tertiary-fixed": "#d3e4fe",
+                      "surface-container-high": "#e6e8ea",
+                      "on-primary": "#ffffff",
+                      "primary": "#000000",
+                      "primary-fixed-dim": "#bec6e0",
+                      "surface-container-low": "#f2f4f6",
+                      "tertiary": "#000000"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "projection-margin": "10%",
+                      "sm": "8px",
+                      "md": "16px",
+                      "unit": "4px",
+                      "xs": "4px",
+                      "container-max": "1280px",
+                      "xl": "48px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Playfair Display"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Work Sans"],
+                      "display-projection": ["Playfair Display"],
+                      "headline-lg-mobile": ["Playfair Display"],
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["48px", {"lineHeight": "56px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "display-projection": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .projection-card-shadow {
+            box-shadow: 0 12px 24px -10px rgba(19, 27, 46, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c6c6cd; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-hidden">
+<!-- Shared SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col h-full py-md px-sm z-50">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">BibleCast</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Grace Community Church</p>
+</div>
+<nav class="flex-1 space-y-xs">
+<!-- Active: Dashboard -->
+<a class="flex items-center gap-md px-md py-sm text-primary border-l-4 border-secondary font-bold hover:bg-surface-container-high transition-colors opacity-80 duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Library</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">History</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-sm space-y-md">
+<div class="flex items-center gap-sm p-sm bg-surface-container-low rounded-lg">
+<img alt="Church Admin Profile" class="w-8 h-8 rounded-full bg-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcLOfYDTN9drnUkdWB1hxogpLMgK_6MWEDG6LGW0V1MceR7uUaHxWJD5giF4yF2M19Q8XdqjY2kw6AzOBmPr0LS40tDu0uKuAOlG6c7IFvdA2uoqc9DpwpQQd63ZnyuO5kYTLsO-TCAiDtWCiLFuXhWXp_QsYKr8qWgkAQsFZHuPy65KifybOQi14Vxobq_5l2o_6DkGuvv1yWslU90DbIwNgednnKhuFN1sp09cASLwfH_bks4Vbv9zqLDmwHR6Yk_ztcFQtqo2eJ"/>
+<div class="overflow-hidden">
+<p class="font-label-sm text-label-sm truncate">Admin User</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Senior Tech</p>
+</div>
+</div>
+<button class="w-full bg-secondary text-on-secondary-container font-bold py-md rounded transition-all active:scale-95 duration-200">
+                Go Live
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex flex-col h-screen">
+<!-- Shared TopAppBar -->
+<header class="flex justify-between items-center w-full px-lg h-16 bg-surface-bright border-b border-outline-variant sticky top-0 z-40 shadow-sm">
+<div class="flex items-center gap-lg flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-xl pr-md py-xs bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:outline-none focus:border-primary transition-colors" placeholder="Search scriptures (e.g. John 3:16)..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm mr-md border-r border-outline-variant pr-md">
+<button class="p-sm text-on-surface-variant hover:text-primary transition-all active:scale-95">
+<span class="material-symbols-outlined">cast</span>
+</button>
+<button class="p-sm text-on-surface-variant hover:text-primary transition-all active:scale-95">
+<span class="material-symbols-outlined">emergency_home</span>
+</button>
+</div>
+<button class="font-label-sm text-label-sm uppercase tracking-widest text-primary border border-primary px-md py-xs hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95">
+                    Clear Projection
+                </button>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="flex-1 grid grid-cols-12 gap-lg p-lg overflow-hidden bg-surface">
+<!-- Left Column: Playlist & Search Results -->
+<div class="col-span-4 flex flex-col gap-lg h-full overflow-hidden">
+<!-- Playlist Section -->
+<section class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col overflow-hidden">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h2 class="font-headline-md text-[18px] text-primary">Sermon Playlist</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-sm py-1 rounded">8 Items</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-sm space-y-sm">
+<!-- Active Item -->
+<div class="p-md bg-primary-container text-white rounded border-l-4 border-secondary group cursor-pointer">
+<div class="flex justify-between items-start mb-xs">
+<span class="font-label-sm text-[10px] uppercase text-on-primary-container">Current</span>
+<span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100">drag_indicator</span>
+</div>
+<p class="font-headline-md text-body-lg">Psalm 23:1-3</p>
+<p class="font-label-sm text-[12px] opacity-70">The Lord is my shepherd...</p>
+</div>
+<!-- Secondary Items -->
+<div class="p-md hover:bg-surface-container-high rounded border-l-4 border-transparent transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<span class="font-label-sm text-[10px] uppercase text-on-surface-variant">Queue #2</span>
+<span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 text-outline">drag_indicator</span>
+</div>
+<p class="font-headline-md text-body-lg text-primary">John 10:11</p>
+<p class="font-label-sm text-[12px] text-on-surface-variant">I am the good shepherd...</p>
+</div>
+<div class="p-md hover:bg-surface-container-high rounded border-l-4 border-transparent transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-xs">
+<span class="font-label-sm text-[10px] uppercase text-on-surface-variant">Queue #3</span>
+<span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 text-outline">drag_indicator</span>
+</div>
+<p class="font-headline-md text-body-lg text-primary">1 Peter 5:4</p>
+<p class="font-label-sm text-[12px] text-on-surface-variant">And when the Chief Shepherd...</p>
+</div>
+<!-- Divider / Section Title -->
+<div class="py-sm px-md">
+<p class="font-label-sm text-[10px] uppercase text-outline-variant">Scripture Tags</p>
+</div>
+<div class="flex flex-wrap gap-xs px-md">
+<span class="bg-primary-fixed text-on-primary-fixed px-sm py-1 rounded-full font-label-sm text-[10px]">PSALMS</span>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-1 rounded-full font-label-sm text-[10px]">GOSPELS</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed px-sm py-1 rounded-full font-label-sm text-[10px]">NEW TESTAMENT</span>
+</div>
+</div>
+<div class="p-md bg-surface-container-low border-t border-outline-variant">
+<button class="w-full py-sm border border-dashed border-outline text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-high transition-colors">
+                            + Add Verses to Playlist
+                        </button>
+</div>
+</section>
+</div>
+<!-- Right Column: Projection Preview & Live Controls -->
+<div class="col-span-8 flex flex-col gap-lg h-full">
+<!-- Main Preview Area -->
+<section class="flex-1 bg-surface-dim border border-outline-variant rounded-xl p-xl flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Overlay Header -->
+<div class="absolute top-md left-md right-md flex justify-between items-center z-10">
+<div class="flex items-center gap-sm">
+<span class="w-3 h-3 bg-error rounded-full animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-error uppercase font-bold tracking-widest">Live Output</span>
+</div>
+<div class="flex gap-sm">
+<button class="bg-white/90 p-xs rounded shadow-sm hover:bg-white"><span class="material-symbols-outlined text-[20px]">aspect_ratio</span></button>
+<button class="bg-white/90 p-xs rounded shadow-sm hover:bg-white"><span class="material-symbols-outlined text-[20px]">palette</span></button>
+</div>
+</div>
+<!-- Projection Canvas (16:9 Aspect) -->
+<div class="w-full max-w-4xl aspect-video bg-[#0B132B] rounded-sm relative shadow-2xl overflow-hidden ring-4 ring-primary-container">
+<div class="absolute inset-0 opacity-20">
+<img class="w-full h-full object-cover" data-alt="A deep navy blue textured background with subtle architectural patterns and soft atmospheric lighting, designed for a worship projection screen. The style is elegant and minimalist, ensuring high legibility for white serif text. The overall mood is reverent and calm with a premium sacred aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgDe_QVH6CykLzYUaJL9Zwi4yj4Cyd9ewAPpdDOmrVR8NtuWysb4F9kfvSFCNSbaysNHH1cufA3-YUR_EwNLqf5JftzDgfiEG0taHQSTttLsrZmjmpdGzR_OXx6mFRJPnwHkyH-jfstS_qHuzEXpxyLRmRQdnTTjGniN6YL0NPhkHDLnsB4zjQ6DtiAqIK_AMKcntKLp4mDTeTLb7yMhvTY6P3aEeThXpQcwL1OKI-T5RJMItv310AToE5oHoVOeY9li6cweD3Z-pc"/>
+</div>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center px-projection-margin py-projection-margin">
+<h3 class="font-display-projection text-display-projection text-white leading-tight">Psalm 23:1</h3>
+<p class="font-headline-lg text-white mt-lg italic opacity-90">"The Lord is my shepherd; I shall not want."</p>
+</div>
+<!-- Projection Safety Safe Area Visualization (Toggleable in actual app) -->
+<div class="absolute inset-0 border border-white/5 pointer-events-none m-projection-margin"></div>
+</div>
+<!-- Live Control Bar -->
+<div class="mt-xl w-full max-w-md bg-surface-container-lowest border border-outline-variant rounded-full p-sm flex items-center justify-between shadow-lg">
+<button class="flex-1 flex items-center justify-center gap-sm py-sm hover:bg-surface-container-high transition-all rounded-full group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">arrow_back_ios</span>
+<span class="font-label-sm text-label-sm uppercase">Previous</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<button class="flex-[1.5] mx-md bg-secondary text-on-secondary-container font-bold py-sm px-xl rounded-full shadow-md active:scale-95 transition-all flex items-center justify-center gap-sm" id="liveToggle">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                            TAKE LIVE
+                        </button>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<button class="flex-1 flex items-center justify-center gap-sm py-sm hover:bg-surface-container-high transition-all rounded-full group">
+<span class="font-label-sm text-label-sm uppercase">Next</span>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">arrow_forward_ios</span>
+</button>
+</div>
+</section>
+<!-- Next Slide Preview / Grid -->
+<section class="h-48 flex gap-md">
+<div class="flex-1 bg-surface-container-low border border-outline-variant rounded-xl p-md flex flex-col">
+<div class="flex justify-between mb-sm items-center">
+<span class="font-label-sm text-[10px] uppercase text-on-surface-variant">Next Up</span>
+<span class="font-label-sm text-[10px] text-outline">Psalm 23:2</span>
+</div>
+<div class="flex-1 bg-[#131B2E] rounded p-md flex items-center justify-center text-center opacity-60">
+<p class="text-white font-headline-md text-[14px]">He makes me lie down in green pastures...</p>
+</div>
+</div>
+<div class="flex-1 bg-surface-container-low border border-outline-variant rounded-xl p-md flex flex-col">
+<div class="flex justify-between mb-sm items-center">
+<span class="font-label-sm text-[10px] uppercase text-on-surface-variant">Following</span>
+<span class="font-label-sm text-[10px] text-outline">Psalm 23:3</span>
+</div>
+<div class="flex-1 bg-[#131B2E] rounded p-md flex items-center justify-center text-center opacity-40">
+<p class="text-white font-headline-md text-[14px]">He restores my soul. He leads me...</p>
+</div>
+</div>
+<div class="w-16 bg-surface-container-high border border-outline-variant rounded-xl flex flex-col items-center justify-center gap-sm hover:bg-surface-variant transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-on-surface-variant">grid_view</span>
+<span class="font-label-sm text-[10px] uppercase text-on-surface-variant transform -rotate-90">Grid</span>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Micro-interactions Script -->
+<script>
+        const liveToggle = document.getElementById('liveToggle');
+        let isLive = false;
+
+        liveToggle.addEventListener('click', () => {
+            isLive = !isLive;
+            if (isLive) {
+                liveToggle.classList.remove('bg-secondary', 'text-on-secondary-container');
+                liveToggle.classList.add('bg-error', 'text-white');
+                liveToggle.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings: \'FILL\' 1;">stop_circle</span> STOP LIVE';
+            } else {
+                liveToggle.classList.add('bg-secondary', 'text-on-secondary-container');
+                liveToggle.classList.remove('bg-error', 'text-white');
+                liveToggle.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings: \'FILL\' 1;">bolt</span> TAKE LIVE';
+            }
+        });
+
+        // Simple Hover Effects for Playlist Items
+        document.querySelectorAll('.cursor-pointer').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.style.transform = 'translateX(4px)';
+                item.style.transition = 'transform 0.2s ease-out';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.transform = 'translateX(0px)';
+            });
+        });
+    </script>
+</body></html>
