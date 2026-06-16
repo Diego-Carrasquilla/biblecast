@@ -13,23 +13,15 @@ function buildIceServers(): RTCIceServer[] {
     { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
   ]
 
+  // TURN opcional vía variables de entorno. Necesario para conectar cuando
+  // pantalla y control están en redes distintas o con NAT restrictivo. Obtén
+  // credenciales gratuitas (p. ej. metered.ca) y configúralas en Vercel.
   const turnUrl = process.env.NEXT_PUBLIC_TURN_URL
   const turnUser = process.env.NEXT_PUBLIC_TURN_USERNAME
   const turnCred = process.env.NEXT_PUBLIC_TURN_CREDENTIAL
 
   if (turnUrl && turnUser && turnCred) {
     servers.push({ urls: turnUrl.split(','), username: turnUser, credential: turnCred })
-  } else {
-    // TURN público gratuito de Open Relay (Metered) como valor por defecto.
-    servers.push({
-      urls: [
-        'turn:openrelay.metered.ca:80',
-        'turn:openrelay.metered.ca:443',
-        'turn:openrelay.metered.ca:443?transport=tcp',
-      ],
-      username: 'openrelayproject',
-      credential: 'openrelayproject',
-    })
   }
 
   return servers
