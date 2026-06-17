@@ -49,8 +49,16 @@ app.get('/ice', async (_req, res) => {
     const response = await fetch(
       `https://${METERED_DOMAIN}/api/v1/turn/credentials?apiKey=${METERED_SECRET_KEY}`,
     )
-    const iceServers = await response.json()
-    res.json(iceServers)
+    const data = await response.json()
+    // Metered responde 200 con { error: "Invalid API Key" } cuando la clave o el
+    // dominio están mal. No reenviar esa basura al navegador: solo servir la
+    // respuesta si es un array de servidores válido; si no, caer a STUN y avisar.
+    if (Array.isArray(data) && data.length > 0) {
+      res.json(data)
+    } else {
+      console.error('[ICE] Metered no devolvió servidores TURN válidos:', data, '→ usando solo STUN. Revisa METERED_SECRET_KEY y METERED_DOMAIN.')
+      res.json(DEFAULT_ICE_SERVERS)
+    }
   } catch (err) {
     console.error('[ICE] No se pudieron obtener credenciales TURN:', err)
     res.json(DEFAULT_ICE_SERVERS)
