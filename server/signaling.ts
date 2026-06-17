@@ -5,6 +5,22 @@ import { Server } from 'socket.io'
 const app = express()
 const httpServer = createServer(app)
 
+// CORS global para TODAS las rutas HTTP (no solo /ice). Antes el header vivía
+// inline dentro de /ice, así que cualquier respuesta que no entrara exactamente
+// en ese handler (404 por deploy viejo, página de error de Render en cold-start)
+// salía SIN Access-Control-Allow-Origin y el navegador la bloqueaba. Con un
+// middleware el header se aplica siempre, incluido el preflight OPTIONS.
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Content-Type')
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204)
+    return
+  }
+  next()
+})
+
 // Endpoint de salud para el health check de Render
 app.get('/', (_req, res) => {
   res.status(200).json({ status: 'ok', service: 'biblecast-signaling' })
@@ -22,9 +38,9 @@ const DEFAULT_ICE_SERVERS = [
 ]
 
 app.get('/ice', async (_req, res) => {
-  res.set('Access-Control-Allow-Origin', '*')
-
+  // El header CORS lo aplica el middleware global de arriba.
   if (!METERED_SECRET_KEY) {
+    console.warn('[ICE] METERED_SECRET_KEY no configurada → solo STUN (sin TURN). El casting entre redes distintas NO funcionará.')
     res.json(DEFAULT_ICE_SERVERS)
     return
   }

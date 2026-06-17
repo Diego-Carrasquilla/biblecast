@@ -60,10 +60,35 @@ export function useWebRTC(serverUrl: string) {
       void (async () => {
       let iceServers: RTCIceServer[] | undefined
       try {
-        const res = await fetch(`${serverUrl}/ice`)
-        if (res.ok) iceServers = await res.json()
+        // Timeout para que un cold-start de Render (free plan puede tardar ~50s)
+        // no deje colgada toda la conexión. Si /ice no responde a tiempo se
+        // continúa con los servidores por defecto (solo STUN).
+        const ctrl = new AbortController()
+        const timeout = setTimeout(() => ctrl.abort(), 5000)
+        const res = await fetch(`${serverUrl}/ice`, { signal: ctrl.signal })
+        clearTimeout(timeout)
+        if (res.ok) {
+          const data = await res.json()
+          // /ice puede devolver un array de servidores o un objeto { iceServers }.
+          // Si la respuesta no es válida (p. ej. un error de Metered), se ignora
+          // y se cae a STUN por defecto, sin romper la conexión.
+          const list = Array.isArray(data) ? data : data?.iceServers
+          if (Array.isArray(list)) iceServers = list
+        }
       } catch {
-        // Sin /ice disponible se usan los servidores por defecto (solo STUN).
+        console.warn('[WebRTC] /ice no disponible → usando solo STUN. El casting entre redes distintas puede fallar.')
+      }
+
+      const hasTurn =
+        Array.isArray(iceServers) &&
+        iceServers.some((s) => {
+          const urls = Array.isArray(s.urls) ? s.urls : [s.urls]
+          return urls.some(
+            (u) => typeof u === 'string' && (u.startsWith('turn:') || u.startsWith('turns:')),
+          )
+        })
+      if (!hasTurn) {
+        console.warn('[WebRTC] Sin servidores TURN. Solo conectará si ambos dispositivos están en la misma red local.')
       }
 
       webrtc.createConnection((candidate) => {

@@ -73,8 +73,18 @@ export class WebRTCService {
       this.setupDataChannel(event.channel)
     }
 
+    this.peerConnection.onsignalingstatechange = () => {
+      console.log('[WebRTC] Signaling:', this.peerConnection?.signalingState)
+    }
+
     this.peerConnection.oniceconnectionstatechange = () => {
-      console.log('[WebRTC] ICE:', this.peerConnection?.iceConnectionState)
+      const ice = this.peerConnection?.iceConnectionState
+      console.log('[WebRTC] ICE:', ice)
+      if (ice === 'failed') {
+        console.error(
+          '[WebRTC] Conectividad ICE FALLIDA. Causa típica: no hay relay TURN y los dispositivos están en redes distintas. El DataChannel no podrá abrir.',
+        )
+      }
     }
 
     this.peerConnection.onconnectionstatechange = () => {
@@ -101,8 +111,10 @@ export class WebRTCService {
 
   private setupDataChannel(channel: RTCDataChannel): void {
     this.dataChannel = channel
+    console.log('[DataChannel] Configurado, readyState:', channel.readyState)
 
     channel.onopen = () => {
+      console.log('[DataChannel] OPEN ✅ readyState:', channel.readyState)
       this.handleMessage({
         type: 'CONNECTED',
         timestamp: Date.now(),
@@ -110,10 +122,15 @@ export class WebRTCService {
     }
 
     channel.onclose = () => {
+      console.log('[DataChannel] CLOSE, readyState:', channel.readyState)
       this.handleMessage({
         type: 'DISCONNECTED',
         timestamp: Date.now(),
       } satisfies BibleCastEvent)
+    }
+
+    channel.onerror = (event) => {
+      console.error('[DataChannel] error:', event)
     }
 
     channel.onmessage = (event) => {

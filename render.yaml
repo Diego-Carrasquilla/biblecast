@@ -8,6 +8,13 @@ services:
     startCommand: npm run signaling
     healthCheckPath: /
     envVars:
-      # URL del frontend en Vercel (para CORS). Se rellena tras desplegar en Vercel.
+      # URL del frontend en Vercel (para CORS de Socket.IO). Se rellena tras desplegar en Vercel.
       - key: CLIENT_URL
+        sync: false
+      # Credenciales TURN (Metered). SIN esto, /ice solo devuelve STUN y el
+      # casting entre redes distintas (proyector en WiFi + celular en datos)
+      # NO funcionará. Crea una cuenta gratuita en metered.ca y pega la API key.
+      - key: METERED_SECRET_KEY
+        sync: false
+      - key: METERED_DOMAIN
         sync: false
