@@ -52,13 +52,25 @@ export function useWebRTC(serverUrl: string) {
     (code: string, role: SessionRole) => {
       const webrtc = new WebRTCService()
       webrtcRef.current = webrtc
-
       webrtc.onMessage(handleIncomingMessage)
-      signalingService.connect(serverUrl)
+
+      // Toda la configuración es asíncrona porque primero pedimos los servidores
+      // ICE (STUN + TURN) al backend. La conexión peer debe existir antes de que
+      // lleguen los eventos de señalización, por eso createConnection va primero.
+      void (async () => {
+      let iceServers: RTCIceServer[] | undefined
+      try {
+        const res = await fetch(`${serverUrl}/ice`)
+        if (res.ok) iceServers = await res.json()
+      } catch {
+        // Sin /ice disponible se usan los servidores por defecto (solo STUN).
+      }
 
       webrtc.createConnection((candidate) => {
         signalingService.sendIceCandidate(candidate, code)
-      })
+      }, iceServers)
+
+      signalingService.connect(serverUrl)
 
       // Ejecuta la acción una vez por conexión: si el socket ya está conectado,
       // ahora mismo; si no, en el evento 'connected'. Así se cubre la primera
@@ -134,6 +146,7 @@ export function useWebRTC(serverUrl: string) {
           console.warn('[Signaling] No se pudo añadir ICE candidate', err)
         }
       })
+      })()
     },
     [serverUrl, handleIncomingMessage],
   )

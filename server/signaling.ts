@@ -10,6 +10,37 @@ app.get('/', (_req, res) => {
   res.status(200).json({ status: 'ok', service: 'biblecast-signaling' })
 })
 
+// Servidores ICE (STUN + TURN). El SECRET KEY de Metered vive solo aquí, en el
+// backend, nunca en el frontend. El navegador pide /ice y recibe las
+// credenciales TURN ya listas (rotan solas). Si no hay clave configurada,
+// devuelve solo STUN (funciona en la misma red).
+const METERED_DOMAIN = process.env.METERED_DOMAIN ?? 'biblechat.metered.live'
+const METERED_SECRET_KEY = process.env.METERED_SECRET_KEY
+
+const DEFAULT_ICE_SERVERS = [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+]
+
+app.get('/ice', async (_req, res) => {
+  res.set('Access-Control-Allow-Origin', '*')
+
+  if (!METERED_SECRET_KEY) {
+    res.json(DEFAULT_ICE_SERVERS)
+    return
+  }
+
+  try {
+    const response = await fetch(
+      `https://${METERED_DOMAIN}/api/v1/turn/credentials?apiKey=${METERED_SECRET_KEY}`,
+    )
+    const iceServers = await response.json()
+    res.json(iceServers)
+  } catch (err) {
+    console.error('[ICE] No se pudieron obtener credenciales TURN:', err)
+    res.json(DEFAULT_ICE_SERVERS)
+  }
+})
+
 const io = new Server(httpServer, {
   cors: {
     origin: process.env.CLIENT_URL ?? 'http://localhost:3000',

@@ -40,11 +40,14 @@ export class WebRTCService {
     this.handleMessage = this.handleMessage.bind(this)
   }
 
-  createConnection(onIceCandidate: (candidate: RTCIceCandidateInit) => void): RTCPeerConnection {
+  createConnection(
+    onIceCandidate: (candidate: RTCIceCandidateInit) => void,
+    iceServers?: RTCIceServer[],
+  ): RTCPeerConnection {
     this.onIceCandidate = onIceCandidate
 
     this.peerConnection = new RTCPeerConnection({
-      iceServers: buildIceServers(),
+      iceServers: iceServers && iceServers.length > 0 ? iceServers : buildIceServers(),
     })
 
     this.peerConnection.onicecandidate = (event) => {
