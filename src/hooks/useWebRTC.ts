@@ -14,6 +14,7 @@ export function useWebRTC(serverUrl: string) {
 
   const handleIncomingMessage = useCallback(
     (event: BibleCastEvent) => {
+      console.log('[Screen] Mensaje recibido:', event.type)
       switch (event.type) {
         case 'SHOW_VERSE':
           if (event.payload?.text && event.payload?.reference) {
@@ -25,14 +26,19 @@ export function useWebRTC(serverUrl: string) {
               reference: event.payload.reference,
               version: 'RVR1960',
             })
+            console.log('[Screen] Estado actualizado: currentVerse =', event.payload.reference)
+          } else {
+            console.warn('[Screen] SHOW_VERSE con payload incompleto:', event.payload)
           }
           break
         case 'HIDE_VERSE':
           hideVerse()
+          console.log('[Screen] Estado actualizado: currentVerse = null')
           break
         case 'UPDATE_STYLE':
           if (event.payload?.style) {
             updateProjectionStyle(event.payload.style)
+            console.log('[Screen] Estado actualizado: projectionStyle', event.payload.style)
           }
           break
         case 'CONNECTED':

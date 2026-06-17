@@ -202,7 +202,10 @@ export class WebRTCService {
 
   send(event: BibleCastEvent): void {
     if (this.dataChannel?.readyState === 'open') {
+      console.log('[Transport] →', event.type)
       this.dataChannel.send(JSON.stringify(event))
+    } else {
+      console.warn('[Transport] DataChannel no abierto, evento descartado:', event.type, '(readyState:', this.dataChannel?.readyState, ')')
     }
   }
 

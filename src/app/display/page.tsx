@@ -11,6 +11,7 @@ import { generateSessionCode } from '@/lib/utils'
 function DisplayContent() {
   const searchParams = useSearchParams()
   const currentVerse = useBibleCastStore((s) => s.currentVerse)
+  const projectionStyle = useBibleCastStore((s) => s.projectionStyle)
   const connectionStatus = useBibleCastStore((s) => s.connectionStatus)
   const { ensureConnected } = useWebRTCConnection()
 
@@ -40,7 +41,13 @@ function DisplayContent() {
     )
   }
 
-  return <ProjectionCanvas text={currentVerse?.text} reference={currentVerse?.reference} />
+  return (
+    <ProjectionCanvas
+      text={currentVerse?.text}
+      reference={currentVerse?.reference}
+      style={projectionStyle}
+    />
+  )
 }
 
 export default function DisplayPage() {

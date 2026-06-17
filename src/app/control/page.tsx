@@ -25,7 +25,7 @@ function ControlContent() {
   const code = searchParams.get('code') ?? ''
 
   const { currentVerse, showVerse, hideVerse, connectionStatus } = useBibleCastStore()
-  const { ensureConnected, sendEvent } = useWebRTCConnection()
+  const { ensureConnected } = useWebRTCConnection()
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,29 +40,18 @@ function ControlContent() {
     if (code) ensureConnected(code, 'controller')
   }, [code, ensureConnected])
 
-  // Actualiza la vista local y, además, lo envía a la pantalla por WebRTC.
+  // Solo actualiza el store: el difusor del provider publica el cambio a la
+  // pantalla por WebRTC (mismo camino que usan el panel y la biblioteca).
   const pushVerse = useCallback(
     (verse: BibleVerse) => {
       showVerse(verse)
-      sendEvent({
-        type: 'SHOW_VERSE',
-        payload: {
-          book: verse.book,
-          chapter: verse.chapter,
-          verse: verse.verse,
-          text: verse.text,
-          reference: verse.reference,
-        },
-        timestamp: Date.now(),
-      })
     },
-    [showVerse, sendEvent],
+    [showVerse],
   )
 
   const hideOnDisplay = useCallback(() => {
     hideVerse()
-    sendEvent({ type: 'HIDE_VERSE', timestamp: Date.now() })
-  }, [hideVerse, sendEvent])
+  }, [hideVerse])
 
   const handleSearch = useCallback(async (ref: string) => {
     if (!ref.trim()) return
