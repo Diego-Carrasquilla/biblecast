@@ -26,12 +26,13 @@ app.get('/', (_req, res) => {
   res.status(200).json({ status: 'ok', service: 'biblecast-signaling' })
 })
 
-// Servidores ICE (STUN + TURN). El SECRET KEY de Metered vive solo aquí, en el
-// backend, nunca en el frontend. El navegador pide /ice y recibe las
-// credenciales TURN ya listas (rotan solas). Si no hay clave configurada,
-// devuelve solo STUN (funciona en la misma red).
-const METERED_DOMAIN = process.env.METERED_DOMAIN ?? 'biblechat.metered.live'
-const METERED_SECRET_KEY = process.env.METERED_SECRET_KEY
+// Servidores ICE (STUN + TURN). Las credenciales TURN se piden a Cloudflare
+// (servicio gratuito, sin tarjeta). El token de Cloudflare vive solo aquí, en
+// el backend, nunca en el frontend. El navegador pide /ice y recibe las
+// credenciales TURN ya listas (rotan solas, TTL de 24 h). Si no hay token
+// configurado, devuelve solo STUN (funciona en la misma red local).
+const CF_TURN_KEY_ID = process.env.CLOUDFLARE_TURN_KEY_ID
+const CF_TURN_API_TOKEN = process.env.CLOUDFLARE_TURN_API_TOKEN
 
 const DEFAULT_ICE_SERVERS = [
   { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
@@ -39,28 +40,35 @@ const DEFAULT_ICE_SERVERS = [
 
 app.get('/ice', async (_req, res) => {
   // El header CORS lo aplica el middleware global de arriba.
-  if (!METERED_SECRET_KEY) {
-    console.warn('[ICE] METERED_SECRET_KEY no configurada → solo STUN (sin TURN). El casting entre redes distintas NO funcionará.')
+  if (!CF_TURN_KEY_ID || !CF_TURN_API_TOKEN) {
+    console.warn('[ICE] Cloudflare TURN no configurado (CLOUDFLARE_TURN_KEY_ID / CLOUDFLARE_TURN_API_TOKEN) → solo STUN. El casting entre redes distintas NO funcionará.')
     res.json(DEFAULT_ICE_SERVERS)
     return
   }
 
   try {
     const response = await fetch(
-      `https://${METERED_DOMAIN}/api/v1/turn/credentials?apiKey=${METERED_SECRET_KEY}`,
+      `https://rtc.live.cloudflare.com/v1/turn/keys/${CF_TURN_KEY_ID}/credentials/generate-ice-servers`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${CF_TURN_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ttl: 86400 }),
+      },
     )
     const data = await response.json()
-    // Metered responde 200 con { error: "Invalid API Key" } cuando la clave o el
-    // dominio están mal. No reenviar esa basura al navegador: solo servir la
-    // respuesta si es un array de servidores válido; si no, caer a STUN y avisar.
-    if (Array.isArray(data) && data.length > 0) {
-      res.json(data)
+    // Cloudflare responde 201 con { iceServers: [...] } (ya es un array STUN+TURN).
+    // Solo reenviar al navegador si la respuesta es válida; si no, caer a STUN.
+    if (response.ok && Array.isArray(data?.iceServers) && data.iceServers.length > 0) {
+      res.json(data.iceServers)
     } else {
-      console.error('[ICE] Metered no devolvió servidores TURN válidos:', data, '→ usando solo STUN. Revisa METERED_SECRET_KEY y METERED_DOMAIN.')
+      console.error('[ICE] Cloudflare no devolvió servidores TURN válidos:', data, '→ usando solo STUN. Revisa CLOUDFLARE_TURN_KEY_ID y CLOUDFLARE_TURN_API_TOKEN.')
       res.json(DEFAULT_ICE_SERVERS)
     }
   } catch (err) {
-    console.error('[ICE] No se pudieron obtener credenciales TURN:', err)
+    console.error('[ICE] No se pudieron obtener credenciales TURN de Cloudflare:', err)
     res.json(DEFAULT_ICE_SERVERS)
   }
 })

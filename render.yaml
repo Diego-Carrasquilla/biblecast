@@ -11,10 +11,11 @@ services:
       # URL del frontend en Vercel (para CORS de Socket.IO). Se rellena tras desplegar en Vercel.
       - key: CLIENT_URL
         sync: false
-      # Credenciales TURN (Metered). SIN esto, /ice solo devuelve STUN y el
-      # casting entre redes distintas (proyector en WiFi + celular en datos)
-      # NO funcionará. Crea una cuenta gratuita en metered.ca y pega la API key.
-      - key: METERED_SECRET_KEY
+      # Credenciales TURN (Cloudflare Realtime, gratis y sin tarjeta). SIN esto,
+      # /ice solo devuelve STUN y el casting entre redes distintas (proyector en
+      # WiFi + celular en datos) NO funcionará. Crea una TURN Key en el dashboard
+      # de Cloudflare (Realtime → TURN) y pega el Key ID y el API Token.
+      - key: CLOUDFLARE_TURN_KEY_ID
         sync: false
-      - key: METERED_DOMAIN
+      - key: CLOUDFLARE_TURN_API_TOKEN
         sync: false
