@@ -27,6 +27,17 @@ function updateStyleEvent(style: ProjectionStyle): BibleCastEvent {
   return { type: 'UPDATE_STYLE', payload: { style }, timestamp: Date.now() }
 }
 
+// Log por categoría de cada cambio de estilo, para depuración fina.
+function logStyleSent(prev: ProjectionStyle, next: ProjectionStyle): void {
+  if (prev.fontFamily !== next.fontFamily) console.log('[Font] Sent', next.fontFamily)
+  if (prev.accentColor !== next.accentColor) console.log('[Color] Sent', next.accentColor)
+  if (prev.background !== next.background) console.log('[Theme] Sent', next.background)
+  if (prev.textAlign !== next.textAlign) console.log('[Align] Sent', next.textAlign)
+  if (prev.fontSize !== next.fontSize) console.log('[Size] Sent', next.fontSize)
+  if (prev.verticalPosition !== next.verticalPosition) console.log('[Position] Sent', next.verticalPosition)
+  if (prev.sanctuaryMargin !== next.sanctuaryMargin) console.log('[Margin] Sent', next.sanctuaryMargin)
+}
+
 type WebRTCContextValue = ReturnType<typeof useWebRTC> & {
   /**
    * Conecta una sola vez por sesión (code + role). Es idempotente: si ya hay
@@ -35,6 +46,10 @@ type WebRTCContextValue = ReturnType<typeof useWebRTC> & {
    * vuelva a abrir otra conexión.
    */
   ensureConnected: (code: string, role: SessionRole) => void
+  /** Código de la sesión activa (el de la pantalla a la que se controla). */
+  sessionCode: string | null
+  /** Rol con el que este dispositivo está conectado. */
+  role: SessionRole | null
 }
 
 const WebRTCContext = createContext<WebRTCContextValue | null>(null)
@@ -51,6 +66,7 @@ export function WebRTCProvider({ children }: { children: React.ReactNode }) {
   const { connect, sendEvent, isReady } = webrtc
   const startedRef = useRef<string | null>(null)
   const [role, setRole] = useState<SessionRole | null>(null)
+  const [sessionCode, setSessionCode] = useState<string | null>(null)
 
   const ensureConnected = useCallback(
     (code: string, r: SessionRole) => {
@@ -58,6 +74,7 @@ export function WebRTCProvider({ children }: { children: React.ReactNode }) {
       if (startedRef.current === key) return
       startedRef.current = key
       setRole(r)
+      setSessionCode(code)
       connect(code, r)
     },
     [connect],
@@ -81,7 +98,7 @@ export function WebRTCProvider({ children }: { children: React.ReactNode }) {
         }
       }
       if (state.projectionStyle !== prev.projectionStyle) {
-        console.log('[Broadcast] projectionStyle → UPDATE_STYLE', state.projectionStyle)
+        logStyleSent(prev.projectionStyle, state.projectionStyle)
         sendEvent(updateStyleEvent(state.projectionStyle))
       }
     })
@@ -100,7 +117,7 @@ export function WebRTCProvider({ children }: { children: React.ReactNode }) {
   }, [role, isReady, sendEvent])
 
   return (
-    <WebRTCContext.Provider value={{ ...webrtc, ensureConnected }}>
+    <WebRTCContext.Provider value={{ ...webrtc, ensureConnected, sessionCode, role }}>
       {children}
     </WebRTCContext.Provider>
   )

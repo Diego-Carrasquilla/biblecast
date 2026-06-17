@@ -48,7 +48,8 @@ interface BibleCastState {
 const DEFAULT_STYLE: ProjectionStyle = {
   background: 'solid-navy',
   accentColor: '#fed488',
-  fontFamily: 'Playfair Display',
+  // Variable CSS de next/font (no el nombre literal): se aplica siempre.
+  fontFamily: 'var(--font-playfair), serif',
   fontSize: 72,
   textAlign: 'center',
   verticalPosition: 50,

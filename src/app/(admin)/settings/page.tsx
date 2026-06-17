@@ -13,7 +13,7 @@ import type { ProjectionStyle } from '@/types/events'
 const DEFAULT_STYLE: ProjectionStyle = {
   background: 'solid-navy',
   accentColor: '#fed488',
-  fontFamily: 'Playfair Display',
+  fontFamily: 'var(--font-playfair), serif',
   fontSize: 72,
   textAlign: 'center',
   verticalPosition: 50,

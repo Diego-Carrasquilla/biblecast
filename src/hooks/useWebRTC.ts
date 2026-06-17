@@ -7,17 +7,78 @@ import { useBibleCastStore } from '@/store/useBibleCastStore'
 import type { BibleCastEvent } from '@/types/events'
 import type { SessionRole } from '@/types/session'
 
+// Cada cuánto el controlador manda PING, y cuánto silencio toleramos antes de
+// declarar la conexión muerta (latido perdido ≈ 3 PINGs).
+const HEARTBEAT_INTERVAL = 3000
+const HEARTBEAT_TIMEOUT = 9000
+
 export function useWebRTC(serverUrl: string) {
   const webrtcRef = useRef<WebRTCService | null>(null)
   const [isReady, setIsReady] = useState(false)
   const { setConnectionStatus, showVerse, hideVerse, updateProjectionStyle } = useBibleCastStore()
 
+  // Estado del heartbeat. lastBeatRef guarda el timestamp del último latido
+  // (PING o PONG) recibido; el watchdog lo compara para detectar caídas
+  // silenciosas (peer muerto sin que el DataChannel llegue a cerrarse).
+  const roleRef = useRef<SessionRole | null>(null)
+  const lastBeatRef = useRef<number>(0)
+  const pingTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const watchTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const stopHeartbeat = useCallback(() => {
+    if (pingTimer.current) {
+      clearInterval(pingTimer.current)
+      pingTimer.current = null
+    }
+    if (watchTimer.current) {
+      clearInterval(watchTimer.current)
+      watchTimer.current = null
+    }
+  }, [])
+
+  const startHeartbeat = useCallback(() => {
+    stopHeartbeat()
+    lastBeatRef.current = Date.now()
+    // Solo el controlador emite PING; la pantalla responde PONG.
+    if (roleRef.current === 'controller') {
+      pingTimer.current = setInterval(() => {
+        console.log('[Connection] Heartbeat sent (PING)')
+        webrtcRef.current?.send({ type: 'PING', timestamp: Date.now() })
+      }, HEARTBEAT_INTERVAL)
+    }
+    // Ambos lados vigilan: sin latido en HEARTBEAT_TIMEOUT → desconectado.
+    watchTimer.current = setInterval(() => {
+      if (Date.now() - lastBeatRef.current > HEARTBEAT_TIMEOUT) {
+        console.warn('[Connection] Heartbeat timeout → desconectado')
+        setConnectionStatus('disconnected')
+        setIsReady(false)
+        stopHeartbeat()
+      }
+    }, 2000)
+  }, [stopHeartbeat, setConnectionStatus])
+
   const handleIncomingMessage = useCallback(
     (event: BibleCastEvent) => {
+      // Heartbeat: se procesa aparte para no inundar el log general.
+      if (event.type === 'PING') {
+        lastBeatRef.current = Date.now()
+        webrtcRef.current?.send({ type: 'PONG', timestamp: Date.now() })
+        console.log('[Connection] Heartbeat received (PING) → PONG')
+        setConnectionStatus('connected')
+        return
+      }
+      if (event.type === 'PONG') {
+        lastBeatRef.current = Date.now()
+        console.log('[Connection] Heartbeat received (PONG)')
+        setConnectionStatus('connected')
+        return
+      }
+
       console.log('[Screen] Mensaje recibido:', event.type)
       switch (event.type) {
         case 'SHOW_VERSE':
           if (event.payload?.text && event.payload?.reference) {
+            console.log('[Verse] Received', event.payload.reference)
             showVerse({
               book: event.payload.book ?? '',
               chapter: event.payload.chapter ?? 0,
@@ -26,36 +87,48 @@ export function useWebRTC(serverUrl: string) {
               reference: event.payload.reference,
               version: 'RVR1960',
             })
-            console.log('[Screen] Estado actualizado: currentVerse =', event.payload.reference)
+            console.log('[Verse] Applied →', event.payload.reference)
           } else {
             console.warn('[Screen] SHOW_VERSE con payload incompleto:', event.payload)
           }
           break
         case 'HIDE_VERSE':
           hideVerse()
-          console.log('[Screen] Estado actualizado: currentVerse = null')
+          console.log('[Verse] Applied → oculto')
           break
         case 'UPDATE_STYLE':
           if (event.payload?.style) {
-            updateProjectionStyle(event.payload.style)
-            console.log('[Screen] Estado actualizado: projectionStyle', event.payload.style)
+            const prevStyle = useBibleCastStore.getState().projectionStyle
+            const s = event.payload.style
+            if (prevStyle.fontFamily !== s.fontFamily) console.log('[Font] Received/Applied', s.fontFamily)
+            if (prevStyle.accentColor !== s.accentColor) console.log('[Color] Received/Applied', s.accentColor)
+            if (prevStyle.background !== s.background) console.log('[Theme] Received/Applied', s.background)
+            if (prevStyle.textAlign !== s.textAlign) console.log('[Align] Received/Applied', s.textAlign)
+            if (prevStyle.fontSize !== s.fontSize) console.log('[Size] Received/Applied', s.fontSize)
+            updateProjectionStyle(s)
+            console.log('[Screen] Estado actualizado: projectionStyle')
           }
           break
         case 'CONNECTED':
+          console.log('[Connection] Screen connected → confirmación de conexión')
           setConnectionStatus('connected')
           setIsReady(true)
+          startHeartbeat()
           break
         case 'DISCONNECTED':
+          console.log('[Connection] Disconnected')
           setConnectionStatus('disconnected')
           setIsReady(false)
+          stopHeartbeat()
           break
       }
     },
-    [showVerse, hideVerse, updateProjectionStyle, setConnectionStatus],
+    [showVerse, hideVerse, updateProjectionStyle, setConnectionStatus, startHeartbeat, stopHeartbeat],
   )
 
   const connect = useCallback(
     (code: string, role: SessionRole) => {
+      roleRef.current = role
       const webrtc = new WebRTCService()
       webrtcRef.current = webrtc
       webrtc.onMessage(handleIncomingMessage)
@@ -187,18 +260,20 @@ export function useWebRTC(serverUrl: string) {
   }, [])
 
   const disconnect = useCallback(() => {
+    stopHeartbeat()
     webrtcRef.current?.close()
     signalingService.disconnect()
     setConnectionStatus('idle')
     setIsReady(false)
-  }, [setConnectionStatus])
+  }, [setConnectionStatus, stopHeartbeat])
 
   useEffect(() => {
     return () => {
+      stopHeartbeat()
       webrtcRef.current?.close()
       signalingService.disconnect()
     }
-  }, [])
+  }, [stopHeartbeat])
 
   return { connect, disconnect, sendEvent, isReady }
 }

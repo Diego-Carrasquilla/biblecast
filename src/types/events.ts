@@ -6,6 +6,8 @@ export type BibleCastEventType =
   | 'UPDATE_STYLE'
   | 'CONNECTED'
   | 'DISCONNECTED'
+  | 'PING'
+  | 'PONG'
 
 export interface BibleCastEvent {
   type: BibleCastEventType

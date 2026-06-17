@@ -9,10 +9,16 @@ interface TypographyControlsProps {
   onChange: (updates: Partial<ProjectionStyle>) => void
 }
 
+// Los valores apuntan a las variables CSS que next/font define en <html>
+// (ver tailwind.config y layout). Usar el nombre literal ("Playfair Display")
+// NO funciona: next/font registra la fuente con un nombre generado, así que el
+// navegador buscaría una fuente del sistema con ese nombre y caería al serif por
+// defecto en máquinas donde no exista. Con la variable, la fuente cargada se
+// aplica siempre, de forma determinista.
 const fonts = [
-  { value: 'Playfair Display', label: 'Playfair Display (Clásica)' },
-  { value: 'Georgia', label: 'Georgia (Serif)' },
-  { value: 'Inter', label: 'Inter (Sans Serif)' },
+  { value: 'var(--font-playfair), serif', label: 'Playfair Display (Clásica)' },
+  { value: 'Georgia, serif', label: 'Georgia (Serif)' },
+  { value: 'var(--font-inter), sans-serif', label: 'Inter (Sans Serif)' },
 ]
 
 const alignments: { value: ProjectionStyle['textAlign']; label: string; icon: string }[] = [

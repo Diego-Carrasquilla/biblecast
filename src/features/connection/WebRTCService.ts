@@ -202,9 +202,12 @@ export class WebRTCService {
 
   send(event: BibleCastEvent): void {
     if (this.dataChannel?.readyState === 'open') {
-      console.log('[Transport] →', event.type)
+      // PING/PONG van cada 3s; no los registramos para no inundar la consola.
+      if (event.type !== 'PING' && event.type !== 'PONG') {
+        console.log('[Transport] →', event.type)
+      }
       this.dataChannel.send(JSON.stringify(event))
-    } else {
+    } else if (event.type !== 'PING' && event.type !== 'PONG') {
       console.warn('[Transport] DataChannel no abierto, evento descartado:', event.type, '(readyState:', this.dataChannel?.readyState, ')')
     }
   }

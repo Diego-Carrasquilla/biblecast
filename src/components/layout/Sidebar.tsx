@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
+import { useBibleCastStore } from '@/store/useBibleCastStore'
 
 const navItems = [
   { href: '/dashboard', label: 'Panel', icon: DashboardIcon },
@@ -14,6 +15,9 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  // Indicador real: depende del estado de conexión del store, que el heartbeat
+  // mantiene al día. Antes estaba hardcodeado a "Sin pantalla conectada".
+  const connected = useBibleCastStore((s) => s.connectionStatus === 'connected')
 
   return (
     <aside className="sticky top-0 h-screen w-sidebar shrink-0 bg-surface-container-lowest border-r border-outline-variant flex flex-col z-40">
@@ -57,10 +61,18 @@ export function Sidebar() {
         </Button>
         <div className="flex items-center gap-2 px-xs py-2 rounded-lg bg-surface-container-low">
           <span className="relative flex h-2 w-2">
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-outline" />
+            {connected && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            )}
+            <span
+              className={cn(
+                'relative inline-flex rounded-full h-2 w-2',
+                connected ? 'bg-green-500' : 'bg-outline',
+              )}
+            />
           </span>
           <p className="font-label text-label-sm text-on-surface-variant uppercase">
-            Sin pantalla conectada
+            {connected ? 'Pantalla conectada' : 'Sin pantalla conectada'}
           </p>
         </div>
       </div>
