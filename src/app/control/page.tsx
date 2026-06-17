@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useState, useCallback, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { VerseAutocomplete } from '@/components/ui/VerseAutocomplete'
@@ -103,11 +104,22 @@ function ControlContent() {
               {isConnected ? 'Conectado' : 'Local'}
             </span>
           </div>
-          {code && (
-            <span className="font-label text-label-sm text-on-surface-variant tracking-widest">
-              {code}
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {code && (
+              <span className="font-label text-label-sm text-on-surface-variant tracking-widest">
+                {code}
+              </span>
+            )}
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors font-label text-label-sm uppercase"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 0h6v6h-6v-6z" />
+              </svg>
+              Panel
+            </Link>
+          </div>
         </div>
       </header>
 
