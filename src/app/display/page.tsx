@@ -1,34 +1,27 @@
 'use client'
 
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ProjectionCanvas } from '@/components/display/ProjectionCanvas'
 import { QRGenerator } from '@/features/session/QRGenerator'
-import { useWebRTC } from '@/hooks/useWebRTC'
+import { useWebRTCConnection } from '@/features/connection/WebRTCProvider'
 import { useBibleCastStore } from '@/store/useBibleCastStore'
 import { generateSessionCode } from '@/lib/utils'
-
-const SIGNALING_URL = process.env.NEXT_PUBLIC_SIGNALING_URL ?? 'http://localhost:3001'
 
 function DisplayContent() {
   const searchParams = useSearchParams()
   const currentVerse = useBibleCastStore((s) => s.currentVerse)
   const connectionStatus = useBibleCastStore((s) => s.connectionStatus)
-  const { connect, disconnect } = useWebRTC(SIGNALING_URL)
+  const { ensureConnected } = useWebRTCConnection()
 
   // El código se fija una sola vez al abrir la pantalla (de la URL o generado).
   const [code] = useState(
     () => searchParams.get('code')?.toUpperCase() || generateSessionCode(),
   )
-  const startedRef = useRef(false)
 
   useEffect(() => {
-    if (startedRef.current) return
-    startedRef.current = true
-    connect(code, 'display')
-    return () => disconnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code])
+    ensureConnected(code, 'display')
+  }, [code, ensureConnected])
 
   // Mientras no haya un control conectado, mostramos el código y el QR.
   if (connectionStatus !== 'connected') {

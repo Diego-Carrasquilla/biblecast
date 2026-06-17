@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display, Work_Sans } from 'next/font/google'
 import './globals.css'
+import { WebRTCProvider } from '@/features/connection/WebRTCProvider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -42,7 +43,9 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${playfair.variable} ${workSans.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <WebRTCProvider>{children}</WebRTCProvider>
+      </body>
     </html>
   )
 }

@@ -1,17 +1,15 @@
 'use client'
 
-import { Suspense, useState, useCallback, useEffect, useRef } from 'react'
+import { Suspense, useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { VerseAutocomplete } from '@/components/ui/VerseAutocomplete'
 import { useBibleCastStore } from '@/store/useBibleCastStore'
-import { useWebRTC } from '@/hooks/useWebRTC'
+import { useWebRTCConnection } from '@/features/connection/WebRTCProvider'
 import { fetchVerse } from '@/features/bible/BibleService'
 import { cn } from '@/lib/utils'
 import type { BibleVerse } from '@/types/bible'
-
-const SIGNALING_URL = process.env.NEXT_PUBLIC_SIGNALING_URL ?? 'http://localhost:3001'
 
 const QUICK_VERSES = [
   'Salmo 23:1',
@@ -27,7 +25,7 @@ function ControlContent() {
   const code = searchParams.get('code') ?? ''
 
   const { currentVerse, showVerse, hideVerse, connectionStatus } = useBibleCastStore()
-  const { connect, disconnect, sendEvent } = useWebRTC(SIGNALING_URL)
+  const { ensureConnected, sendEvent } = useWebRTCConnection()
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -35,15 +33,12 @@ function ControlContent() {
 
   const isConnected = connectionStatus === 'connected'
 
-  // Se une a la sesión de la pantalla en cuanto tenemos un código.
-  const startedRef = useRef(false)
+  // Se une a la sesión de la pantalla en cuanto tenemos un código. No se
+  // desconecta al desmontar: la conexión vive en el provider raíz para que
+  // navegar al panel de administración no corte la pantalla.
   useEffect(() => {
-    if (!code || startedRef.current) return
-    startedRef.current = true
-    connect(code, 'controller')
-    return () => disconnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code])
+    if (code) ensureConnected(code, 'controller')
+  }, [code, ensureConnected])
 
   // Actualiza la vista local y, además, lo envía a la pantalla por WebRTC.
   const pushVerse = useCallback(
